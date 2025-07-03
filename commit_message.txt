@@ -1,0 +1,1 @@
+Initial project setup with Django, user auth, admin, and part management

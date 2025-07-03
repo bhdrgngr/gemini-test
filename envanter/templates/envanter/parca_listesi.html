@@ -1,0 +1,58 @@
+{% extends 'envanter/base.html' %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Parça Listesi</h2>
+        <form method="get" class="d-flex">
+            <select name="firma" class="form-select me-2" onchange="this.form.submit()">
+                <option value="">Tüm Firmalar</option>
+                {% for firma in firmalar %}
+                    <option value="{{ firma.id }}" {% if request.GET.firma == firma.id|stringformat:"s" %}selected{% endif %}>{{ firma.ad }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="row">
+        {% for parca in parcalar %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ parca.ad|default:"İsimsiz Parça" }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ parca.firma.ad }}</h6>
+                    <p class="card-text">
+                        <strong>Adet:</strong> {{ parca.adet }}<br>
+                        <strong>Renk:</strong> {{ parca.renk }}<br>
+                        {% if parca.ekleyen_kullanici %}
+                            <strong>Ekleyen:</strong> {{ parca.ekleyen_kullanici.username }}
+                        {% endif %}
+                    </p>
+                    {% if request.user.is_staff %}
+                        <div class="mt-2">
+                            <a href="{% url 'parca_duzenle' parca.pk %}" class="btn btn-sm btn-warning">Düzenle</a>
+                            <form action="{% url 'parca_sil' parca.pk %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu parçayı silmek istediğinizden emin misiniz?');">Sil</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div class="d-flex flex-wrap">
+                        {% for fotograf in parca.fotograflar.all %}
+                            <a href="{{ fotograf.resim.url }}" target="_blank">
+                                <img src="{{ fotograf.resim.url }}" alt="{{ parca.ad }}" class="img-thumbnail m-1" style="width: 100px; height: 100px; object-fit: cover;">
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    Eklendi: {{ parca.eklenme_tarihi|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="col">
+                <div class="alert alert-info">Bu filtreye uygun parça bulunmuyor.</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
